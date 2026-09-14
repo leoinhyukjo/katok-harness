@@ -24,3 +24,4 @@ N="$(print -r -- "$OUT" | /usr/bin/jq -r '.inserted_messages // 0' 2>/dev/null)"
 
 T="$(print -r -- "$OUT" | /usr/bin/jq -r '.total_messages // "?"' 2>/dev/null)"
 print -r -- "$(date '+%F %T')  +${N}건 (총 ${T})" >>"$LOG"
+"$HOME/.claude/scripts/katok_txt.sh"   # 방별 txt 실시간 갱신 (~/Downloads/katok-txt/)
