@@ -16,3 +16,5 @@ echo "=== $(date '+%F %T') ===" >>"$LOG"
 "$K" sync --source macos --json >>"$LOG" 2>&1
 "$K" media backfill --kind file --kind image --kind video --json >>"$LOG" 2>&1
 echo "" >>"$LOG"
+# 원문 백업은 sync 뒤 마지막 — 푸시가 실패해도 sync·백필은 이미 끝나 있다
+"$HOME/.claude/scripts/katok_backup.sh" >>"$LOG" 2>&1 || echo "BACKUP FAIL" >>"$LOG"

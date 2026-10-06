@@ -62,3 +62,5 @@ sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" \
   SQL LIKE 전수 스캔 6ms 로 충분하다. 아카이브가 수십 MB 로 커지면 러너에 `katok index` 한 줄 복원.
 
 데이터(`archive.sqlite3`)와 로그는 커밋하지 않는다 — 카톡 원문에 고객 PII 가 들어 있다.
+원문은 `katok_backup.sh`(일일 잡 끝)가 AES-256 으로 암호화해 private 레포 `katok-archive-backup` 에 커밋 1개로 force-push 한다.
+키는 `~/.config/katok/backup.key`(Apple 암호 앱에도 보관). 복원 명령은 스크립트 머리 주석.
