@@ -3,7 +3,7 @@
 macOS 카카오톡 로컬 DB 를 상시 아카이브하고 셸에서 검색하는 개인 하네스.
 
 본체는 [`katok`](https://crates.io/crates/katok) (NomaDamas, Rust, MIT) 0.3.0 무수정 그대로 쓴다. 상류 저장소와 crates.io 배포판은 2026-10 기준 내려가 있어 원본은 `vendor/katok-0.3.0.crate` 뿐이다.
-첨부 백필만 패치판 `katok-media` 를 쓴다(아래 「패치판」).
+법인 카톡 첨부 백필(`~/brain/infra/katok_corp`)만 패치판 `katok-media` 를 쓴다(아래 「패치판」). 개인 카톡 첨부 백필은 껐다.
 이 레포는 그 위에 얹은 **운영 층**(상주 감시 · 첨부 백필 · 검색 함수 · 스크랩 델타)만 담는다.
 
 ## 구성
@@ -12,7 +12,7 @@ macOS 카카오톡 로컬 DB 를 상시 아카이브하고 셸에서 검색하�
 |---|---|
 | `scripts/katok_watch.sh` | 상주 루프. 카톡 WAL 의 mtime 을 2초마다 stat, 바뀐 순간에만 sync (지연 3~5초 실측) |
 | `scripts/katok_sync.sh` | 증분 sync 1회. 신규 0건이면 로그 무기록 |
-| `scripts/katok_daily.sh` | 09:30 첨부 백필. CDN presigned 링크가 ~14일 뒤 410 으로 소멸하므로 하루 1회 필수 |
+| `scripts/katok_daily.sh` | 09:30 sync 1회 + 원문 암호화 백업. 개인 카톡 첨부 백필은 끔(Leo 261021) |
 | `scripts/katok_scraps.sh` | 「나에게 보내기」 링크 델타 추출 (워터마크 기반). `/scraps-organize` 입구 |
 | `zsh/katok-functions.zsh` | `kt <검색어>` / `ktc <방이름>` — 아카이브 SQL 직접 조회 |
 | `launchd/*.plist` | 위 2종 잡 등록 |
@@ -51,7 +51,7 @@ sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" \
 cd vendor/katok-0.3.0 && cargo build --release --no-default-features --locked && cp target/release/katok ~/.cargo/bin/katok-media
 ```
 
-`katok_daily.sh`(개인)와 `~/brain/infra/katok_corp/katok_corp_sync.sh`(법인)는 `~/.config/katok/katok-media-fda-ok` 가 있을 때만 패치판을 부른다.
+`~/brain/infra/katok_corp/katok_corp_sync.sh`(법인)는 `~/.config/katok/katok-media-fda-ok` 가 있을 때만 패치판을 부른다.
 `~/.cargo/bin/katok-media` 에 전체 디스크 접근을 준 뒤에 그 파일을 만든다. **재빌드하면 권한이 깨지므로 표식 파일부터 지우고 다시 준다.**
 
 ## 커버리지 한계 — 검색 결과를 "전체 이력"으로 말하지 말 것
