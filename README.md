@@ -2,7 +2,8 @@
 
 macOS 카카오톡 로컬 DB 를 상시 아카이브하고 셸에서 검색하는 개인 하네스.
 
-본체는 [`katok`](https://crates.io/crates/katok) (NomaDamas, Rust, MIT) 무수정 그대로 쓴다.
+본체는 [`katok`](https://crates.io/crates/katok) (NomaDamas, Rust, MIT) 0.3.0 무수정 그대로 쓴다. 상류 저장소와 crates.io 배포판은 2026-10 기준 내려가 있어 원본은 `vendor/katok-0.3.0.crate` 뿐이다.
+첨부 백필만 패치판 `katok-media` 를 쓴다(아래 「패치판」).
 이 레포는 그 위에 얹은 **운영 층**(상주 감시 · 첨부 백필 · 검색 함수 · 스크랩 델타)만 담는다.
 
 ## 구성
@@ -15,11 +16,13 @@ macOS 카카오톡 로컬 DB 를 상시 아카이브하고 셸에서 검색하�
 | `scripts/katok_scraps.sh` | 「나에게 보내기」 링크 델타 추출 (워터마크 기반). `/scraps-organize` 입구 |
 | `zsh/katok-functions.zsh` | `kt <검색어>` / `ktc <방이름>` — 아카이브 SQL 직접 조회 |
 | `launchd/*.plist` | 위 2종 잡 등록 |
+| `vendor/katok-0.3.0/` | 패치판 소스. 원본 `vendor/katok-0.3.0.crate`, 차이 `vendor/katok-0.3.0-media-size-verify.patch` |
 
 ## 설치
 
 ```sh
-cargo install katok --no-default-features   # send 코드 미포함 — 카카오 ToS·계정 리스크 회피
+cargo install --path vendor/katok-0.3.0 --no-default-features --locked   # crates.io 판은 내려감. send 코드 미포함 — 카카오 ToS·계정 리스크 회피
+# 이 설치본은 패치판이다. 원본 그대로가 필요하면 vendor/katok-0.3.0.crate 를 풀어 같은 명령으로 설치
 ln -s ~/katok-harness/scripts/katok_*.sh ~/.claude/scripts/
 cp ~/katok-harness/launchd/*.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.gowid.katok-{watch,daily}.plist
@@ -38,6 +41,18 @@ sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" \
 ```
 
 **katok 을 재빌드하면 서명 해시가 바뀌어 권한이 깨진다.** 재빌드 후에는 잡을 내리고 권한을 다시 준 뒤 올릴 것.
+
+## 패치판 `katok-media` — 지문 없는 첨부
+
+카카오가 일부 첨부(파일·사진·영상)의 `cs`(SHA-1) 를 null·빈 값으로 보낸다. 원본 0.3.0 은 이런 첨부를 "no cs fingerprint" 로 받지 않는다.
+패치판은 `cs` 가 없을 때 받은 본문 크기가 첨부에 적힌 크기(`s`/`size`)와 정확히 같을 때만 저장한다. 크기도 없으면 원본처럼 거부한다.
+
+```sh
+cd vendor/katok-0.3.0 && cargo build --release --no-default-features --locked && cp target/release/katok ~/.cargo/bin/katok-media
+```
+
+`katok_daily.sh`(개인)와 `~/brain/infra/katok_corp/katok_corp_sync.sh`(법인)는 `~/.config/katok/katok-media-fda-ok` 가 있을 때만 패치판을 부른다.
+`~/.cargo/bin/katok-media` 에 전체 디스크 접근을 준 뒤에 그 파일을 만든다. **재빌드하면 권한이 깨지므로 표식 파일부터 지우고 다시 준다.**
 
 ## 커버리지 한계 — 검색 결과를 "전체 이력"으로 말하지 말 것
 

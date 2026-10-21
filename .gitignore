@@ -5,3 +5,5 @@
 *.watermark
 state/
 archive/
+vendor/*/target/
+.DS_Store

@@ -1,0 +1,63 @@
+diff -ru /Users/leo/.claude/jobs/b4f1a45d/tmp/orig/katok-0.3.0/src/kakao/media_resolver.rs src/kakao/media_resolver.rs
+--- /Users/leo/.claude/jobs/b4f1a45d/tmp/orig/katok-0.3.0/src/kakao/media_resolver.rs	2006-07-24 10:21:28
++++ src/kakao/media_resolver.rs	2026-10-21 19:16:41
+@@ -454,6 +454,7 @@
+             .checksum_sha1
+             .as_deref()
+             .filter(|value| !value.is_empty());
++        let declared_size = frame.size_bytes.filter(|size| *size > 0);
+         if expired {
+             why.push("cdn-expired".to_string());
+         } else if oversized {
+@@ -470,15 +471,20 @@
+                     options.max_fetch_bytes
+                 )),
+             ));
+-        } else if fingerprint.is_some() && options.dry_run {
++        } else if (fingerprint.is_some() || declared_size.is_some()) && options.dry_run {
+             let reason = join_reasons(why.iter().map(String::as_str).chain(["cdn-would-fetch"]));
+             return Ok((
+                 record(frame, MediaTier::Planned, &reason, None, &[]),
+                 errors,
+             ));
+-        } else if let Some(fingerprint) = fingerprint {
++        } else if fingerprint.is_some() || declared_size.is_some() {
++            // Local patch (katok-harness): Kakao now sends some attachments with `cs` null or
++            // empty. Those are checked against the declared byte size instead of being dropped.
+             match fetcher(url, options.cdn_timeout, options.max_fetch_bytes).and_then(|body| {
+-                verify_cdn_checksum(&body, fingerprint)?;
++                match fingerprint {
++                    Some(fingerprint) => verify_cdn_checksum(&body, fingerprint)?,
++                    None => verify_cdn_size(&body, declared_size.unwrap_or_default())?,
++                }
+                 Ok(body)
+             }) {
+                 Ok(body) => {
+@@ -508,7 +514,7 @@
+                 "cdn",
+                 &redact_url(url),
+                 Error::Kakao(
+-                    "attachment carries no cs fingerprint; refusing to store an unverifiable cdn body"
++                    "attachment carries no cs fingerprint or declared size; refusing to store an unverifiable cdn body"
+                         .to_string(),
+                 ),
+             ));
+@@ -625,6 +631,18 @@
+             "cdn body sha1 != cs (expected {}, actual {})",
+             expected.to_ascii_lowercase(),
+             actual
++        )))
++    }
++}
++
++fn verify_cdn_size(body: &[u8], expected: i64) -> Result<()> {
++    if body.len() as i64 == expected {
++        Ok(())
++    } else {
++        Err(Error::Kakao(format!(
++            "cdn body size != declared size (expected {}, actual {})",
++            expected,
++            body.len()
+         )))
+     }
+ }
