@@ -14,6 +14,10 @@ mkdir -p "$(dirname "$LOG")"
 
 echo "=== $(date '+%F %T') ===" >>"$LOG"
 "$K" sync --source macos --json >>"$LOG" 2>&1
+# 예외: [코리너스 전략 논의] 방만 첨부 보존(Leo 261109). 법인폰이 없는 방이라 법인 쪽으로는 못 받는다.
+# katok-media = cs 지문 없는 첨부도 크기 대조로 받는 패치판. 전체 디스크 접근 권한을 준 뒤에만 쓴다(표식 파일).
+KM="$K"; [[ -e "$HOME/.config/katok/katok-media-fda-ok" ]] && KM="$HOME/.cargo/bin/katok-media"
+"$KM" media backfill --chat 473672778156664 --kind file --kind image --kind video --json >>"$LOG" 2>&1
 echo "" >>"$LOG"
 # 원문 백업은 sync 뒤 마지막 — 푸시가 실패해도 sync 는 이미 끝나 있다
 "$HOME/.claude/scripts/katok_backup.sh" >>"$LOG" 2>&1 || echo "BACKUP FAIL" >>"$LOG"
