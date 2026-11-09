@@ -12,7 +12,7 @@ macOS 카카오톡 로컬 DB 를 상시 아카이브하고 셸에서 검색하�
 |---|---|
 | `scripts/katok_watch.sh` | 상주 루프. 카톡 WAL 의 mtime 을 2초마다 stat, 바뀐 순간에만 sync (지연 3~5초 실측) |
 | `scripts/katok_sync.sh` | 증분 sync 1회. 신규 0건이면 로그 무기록 |
-| `scripts/katok_daily.sh` | 09:30 sync 1회 + 원문 암호화 백업. 개인 카톡 첨부 백필은 끔(Leo 261021), [코리너스 전략 논의] 방만 예외로 받음(261109) |
+| `scripts/katok_daily.sh` | 09:30 sync 1회 + 원문 암호화 백업. 개인 카톡 첨부 백필은 끔(Leo 261021), [코리너스 전략 논의]·부대표님·대표님 1:1 방만 예외로 받음(261109) |
 | `scripts/katok_scraps.sh` | 「나에게 보내기」 링크 델타 추출 (워터마크 기반). `/scraps-organize` 입구 |
 | `zsh/katok-functions.zsh` | `kt <검색어>` / `ktc <방이름>` — 아카이브 SQL 직접 조회 |
 | `launchd/*.plist` | 위 2종 잡 등록 |
